@@ -1,3 +1,3 @@
-import * as AuthenticationController from './AuthenticationController'
+import * as AuthenticationController from "./AuthenticationController";
 
-export default AuthenticationController
+export default AuthenticationController;
