@@ -11,4 +11,9 @@ authRouter.post(
   asyncHandler(AuthenticationController.refreshToken)
 );
 
+authRouter.post(
+  AuthenticationController.signOutSlug,
+  asyncHandler(AuthenticationController.signOut)
+);
+
 export default authRouter;

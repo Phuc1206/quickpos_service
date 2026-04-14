@@ -3,6 +3,7 @@ import logger from "@/core/logger";
 import { IRequest, IResponse } from "@/core/types/http-types";
 import IToken from "@/core/types/IToken";
 import Employee from "@/database/Employee";
+import RefreshToken from "@/database/RefreshToken";
 import generate from "@/utils/generate";
 import hashPassword from "@/utils/hashPassword";
 import webToken from "@/utils/webToken";
@@ -39,11 +40,19 @@ export const signIn: any = async (req: IRequest, res: IResponse) => {
       };
     }
     const tokens = generate.token(tokenPayload);
+    const newRefreshToken = new RefreshToken({
+      userId: tokenPayload.userId,
+      token: refreshToken
+    });
 
+    await newRefreshToken.save();
+
+    return newRefreshToken!;
     res.cookie("refreshToken", tokens.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // true nếu là HTTPS
-      sameSite: "strict",
+      sameSite: "none",
+      path: "/",
       maxAge: 30 * 24 * 60 * 60 * 1000 // 30 ngày
     });
     res.status(200).json({
