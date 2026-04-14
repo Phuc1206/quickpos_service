@@ -47,7 +47,6 @@ export const signIn: any = async (req: IRequest, res: IResponse) => {
 
     await newRefreshToken.save();
 
-    return newRefreshToken!;
     res.cookie("refreshToken", tokens.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // true nếu là HTTPS
