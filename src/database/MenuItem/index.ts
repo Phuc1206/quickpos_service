@@ -13,7 +13,7 @@ MenuItemSchema.methods.toResponse = function (this: TMenuItemDocument) {
         name: this.name,
         price: this.price,
         image: this.image,
-        isAvailable: this.isAvailable,
+
         createdAt: this.createdAt
       } as unknown;
     }

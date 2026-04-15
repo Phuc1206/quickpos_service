@@ -9,7 +9,6 @@ interface IMenuItemSchema {
   name: string;
   price: number;
   image: string;
-  isAvailable: boolean;
 }
 
 export interface IMenuItemDocument extends IBaseDocument, IMenuItemSchema {
@@ -39,10 +38,6 @@ const MenuItemSchema = new mongoose.Schema<IMenuItemDocument, IMenuItemModel>(
     image: {
       type: String,
       default: ""
-    },
-    isAvailable: {
-      type: Boolean,
-      default: true
     },
 
     ...generate.schemaDefaultDefinition()

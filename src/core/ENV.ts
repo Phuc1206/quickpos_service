@@ -87,6 +87,15 @@ class ENV {
   public static get ADMIN_PERMISSION() {
     return this.getENV("ADMIN_PERMISSION") as string;
   }
+  public static get CLOUD_NAME() {
+    return this.getENV("CLOUD_NAME") as string;
+  }
+  public static get API_KEY() {
+    return this.getENV("API_KEY") as string;
+  }
+  public static get API_SECRET() {
+    return this.getENV("API_SECRET") as string;
+  }
 }
 
 export default ENV;
