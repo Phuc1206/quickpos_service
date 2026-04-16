@@ -14,7 +14,7 @@ const generateToken = (payload: IToken): Record<EGenerateTokenKey, string> => {
     userId: payload.userId
   };
 
-  const accessToken = jwt.sign(payload, ENV.ACCESS_TOKEN_SECRET, { expiresIn: "15m" });
+  const accessToken = jwt.sign(payload, ENV.ACCESS_TOKEN_SECRET, { expiresIn: "1d" });
   const refreshToken = jwt.sign(refreshTokenPayload, ENV.REFRESH_TOKEN_SECRET, {
     expiresIn: "30d"
   });

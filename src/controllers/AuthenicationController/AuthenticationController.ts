@@ -1,22 +1,22 @@
 import ENV from "@/core/ENV";
 import logger from "@/core/logger";
-import { IRequest, IResponse } from "@/core/types/http-types";
 import IToken from "@/core/types/IToken";
 import Employee from "@/database/Employee";
 import RefreshToken from "@/database/RefreshToken";
 import generate from "@/utils/generate";
 import hashPassword from "@/utils/hashPassword";
 import webToken from "@/utils/webToken";
+import { Request, Response } from "express";
 
 export const signInSlug: string = "/sign-in";
-export const signIn: any = async (req: IRequest, res: IResponse) => {
+export const signIn: any = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
     let userToSign: any = null;
     let tokenPayload: IToken;
     if (username === ENV.ADMIN_USER_NAME && password === ENV.ADMIN_PASSWORD) {
       userToSign = {
-        _id: ENV.ADMIN_ID,
+        userId: ENV.ADMIN_ID,
         name: ENV.ADMIN_NAME,
         username: ENV.ADMIN_USER_NAME,
         phoneNumber: ENV.ADMIN_PHONE_NUMBER,
@@ -42,14 +42,14 @@ export const signIn: any = async (req: IRequest, res: IResponse) => {
     const tokens = generate.token(tokenPayload);
     const newRefreshToken = new RefreshToken({
       userId: tokenPayload.userId,
-      token: refreshToken
+      token: tokens.refreshToken
     });
 
     await newRefreshToken.save();
 
     res.cookie("refreshToken", tokens.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // true nếu là HTTPS
+      secure: true, // true nếu là HTTPS
       sameSite: "none",
       path: "/",
       maxAge: 30 * 24 * 60 * 60 * 1000 // 30 ngày
@@ -69,19 +69,16 @@ export const signIn: any = async (req: IRequest, res: IResponse) => {
 };
 
 export const refreshTokenSlug: string = "/refresh_token";
-export const refreshToken: any = async (req: IRequest, res: IResponse) => {
+export const refreshToken: any = async (req: Request, res: Response) => {
   try {
     const tokenFromCookie = req.cookies?.refreshToken;
-    const tokenFromBody = req.body?.refreshToken;
 
-    const currentRefreshToken = tokenFromCookie || tokenFromBody;
-    if (!currentRefreshToken) {
+    if (!tokenFromCookie) {
       return res.status(401).json({ error: "Không tìm thấy refresh token" });
     }
     let minimalPayload: { userId: string; iat: number; exp: number };
     try {
-      minimalPayload = await webToken.verify(currentRefreshToken, ENV.REFRESH_TOKEN_SECRET);
-      console.log(minimalPayload);
+      minimalPayload = await webToken.verify(tokenFromCookie, ENV.REFRESH_TOKEN_SECRET);
     } catch (err) {
       logger("WARNING", "Refresh token không hợp lệ hoặc đã hết hạn", err);
       return res
@@ -89,10 +86,19 @@ export const refreshToken: any = async (req: IRequest, res: IResponse) => {
         .json({ message: "Refresh token không hợp lệ, vui lòng đăng nhập lại" });
     }
     let newAccessTokenPayload: IToken;
+    let userToReturn: any;
     if (minimalPayload?.userId === ENV.ADMIN_ID) {
       newAccessTokenPayload = {
         userId: ENV.ADMIN_ID,
         level: ENV.ADMIN_PERMISSION
+      };
+      userToReturn = {
+        userId: ENV.ADMIN_ID,
+        name: ENV.ADMIN_NAME,
+        username: ENV.ADMIN_USER_NAME,
+        phoneNumber: ENV.ADMIN_PHONE_NUMBER,
+        fullName: ENV.ADMIN_FULL_NAME,
+        permission: ENV.ADMIN_PERMISSION
       };
     } else {
       const user = await Employee.findById(minimalPayload.userId).lean();
@@ -104,11 +110,13 @@ export const refreshToken: any = async (req: IRequest, res: IResponse) => {
         userId: user._id.toString(),
         level: user.level
       };
+      userToReturn = user;
     }
 
     const newAccessToken = generate.token(newAccessTokenPayload).accessToken;
     res.status(200).json({
-      accessToken: newAccessToken
+      accessToken: newAccessToken,
+      user: userToReturn
     });
   } catch (error) {
     logger("ERROR", error);
@@ -118,12 +126,17 @@ export const refreshToken: any = async (req: IRequest, res: IResponse) => {
 };
 
 export const signOutSlug: string = "/sign-out";
-export const signOut: any = async (req: IRequest, res: IResponse) => {
+export const signOut: any = async (req: Request, res: Response) => {
   try {
+    const tokenFromCookie = req.cookies?.refreshToken;
+
+    if (tokenFromCookie) {
+      await RefreshToken.deleteOne({ userId: req.token.userId, token: refreshToken });
+    }
     res.cookie("refreshToken", "", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       expires: new Date(0)
     });
 
