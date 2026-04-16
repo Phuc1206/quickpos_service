@@ -32,7 +32,7 @@ export const list: any = async (req: Request, res: Response) => {
   return ApiResponse.success(res, 200, "Lấy danh sách Menu thành công", menuItems);
 };
 
-export const detailSlug: string = "/detail";
+export const detailSlug: string = "/detail/:id";
 export const detail: any = async (req: Request, res: Response) => {
   const { id } = req.params;
   const menuItem = await MenuItem.findById(id).lean();
@@ -40,7 +40,7 @@ export const detail: any = async (req: Request, res: Response) => {
   return ApiResponse.success(res, 200, "Lấy menu thành công", menuItem);
 };
 
-export const updateSlug: string = "/";
+export const updateSlug: string = "/:id";
 export const update: any = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name, price } = req.body;
@@ -49,7 +49,7 @@ export const update: any = async (req: Request, res: Response) => {
   return ApiResponse.success(res, 200, "Cập nhật menu thành cong", menuItem);
 };
 
-export const removeSlug: string = "/";
+export const removeSlug: string = "/:id";
 export const remove: any = async (req: Request, res: Response) => {
   const { id } = req.params;
   const menuItem = await MenuItem.findByIdAndUpdate(id, { isDelete: true }, { new: true });
