@@ -1,5 +1,6 @@
 import MenuItem from "@/database/MenuItem";
 import { CloudinaryService } from "@/services";
+import { deleteImage } from "@/services/cloudinary.service";
 import { ApiResponse } from "@/utils/ApiResponse";
 import pagination from "@/utils/pagination";
 import { Request, Response } from "express";
@@ -10,49 +11,80 @@ export const create: any = async (req: Request, res: Response) => {
   const file = req.file as Express.Multer.File;
 
   let imageUrl = "";
+  let publicId = "";
   if (file) {
     const result: any = await CloudinaryService.uploadImage(req.file as Express.Multer.File);
+
     imageUrl = result.secure_url;
+    publicId = result.public_id;
   }
   const item = await MenuItem.create({
     name,
     price,
-    image: imageUrl
+    image: imageUrl,
+    publicId
   });
-  if (!item) return ApiResponse.error(res, 400, "Tạo menu thất bại");
-  return ApiResponse.success(res, 201, "Tạo menu thành cong", item);
+  if (!item) return ApiResponse.error(res, 400, "Tạo thực đơn thất bại");
+  return ApiResponse.success(res, 201, "Tạo thực đơn thành cong", item);
 };
 
 export const listSlug: string = "/list";
 export const list: any = async (req: Request, res: Response) => {
-  const { page, rows } = req.query;
+  const { page, rows, search } = req.query;
   const { skip, limit } = pagination(rows, page);
-  const menuItems = await MenuItem.find({ isDelete: false }).skip(skip).limit(limit);
-  if (!menuItems) return ApiResponse.error(res, 400, "Lấy danh sách Menu thất bại");
-  return ApiResponse.success(res, 200, "Lấy danh sách Menu thành công", menuItems);
+  const menuItems = await MenuItem.find({
+    isDelete: false,
+    name: { $regex: search, $options: "i" }
+  })
+    .skip(skip)
+    .limit(limit);
+  if (!menuItems) return ApiResponse.error(res, 400, "Lấy danh sách thực đơn thất bại");
+  return ApiResponse.success(res, 200, "Lấy danh sách thực đơn thành công", menuItems);
 };
 
 export const detailSlug: string = "/detail/:id";
 export const detail: any = async (req: Request, res: Response) => {
   const { id } = req.params;
   const menuItem = await MenuItem.findById(id).lean();
-  if (!menuItem) return ApiResponse.error(res, 400, "Lấy menu thất bại");
-  return ApiResponse.success(res, 200, "Lấy menu thành công", menuItem);
+  if (!menuItem) return ApiResponse.error(res, 400, "Lấy thực đơn thất bại");
+  return ApiResponse.success(res, 200, "Lấy thực đơn thành công", menuItem);
 };
 
 export const updateSlug: string = "/:id";
 export const update: any = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name, price } = req.body;
-  const menuItem = await MenuItem.findByIdAndUpdate(id, { name, price }, { new: true });
-  if (!menuItem) return ApiResponse.error(res, 400, "Cập nhật menu thất bại");
-  return ApiResponse.success(res, 200, "Cập nhật menu thành cong", menuItem);
+  const file = req.file as Express.Multer.File;
+  let imageUrl = "";
+  let publicId = "";
+  if (file) {
+    const menuItem = await MenuItem.findById(id).lean();
+    if (!menuItem) return ApiResponse.error(res, 400, "Không tìm thấy thực đơn");
+    const result: any = await CloudinaryService.uploadImage(req.file as Express.Multer.File);
+    imageUrl = result.secure_url;
+    publicId = result.public_id;
+    deleteImage(menuItem.publicId);
+  }
+  const menuItem = await MenuItem.findByIdAndUpdate(
+    id,
+    { name, price, image: imageUrl, publicId },
+    { new: true }
+  );
+  if (!menuItem) return ApiResponse.error(res, 400, "Cập nhật thực đơn thất bại");
+  return ApiResponse.success(res, 200, "Cập nhật thực đơn thành cong", menuItem);
 };
 
 export const removeSlug: string = "/:id";
 export const remove: any = async (req: Request, res: Response) => {
   const { id } = req.params;
   const menuItem = await MenuItem.findByIdAndUpdate(id, { isDelete: true }, { new: true });
-  if (!menuItem) return ApiResponse.error(res, 400, "Xóa menu thất bại");
-  return ApiResponse.success(res, 200, "Xóa menu thành cong", menuItem);
+  if (!menuItem) return ApiResponse.error(res, 400, "Xóa thực đơn thất bại");
+  return ApiResponse.success(res, 200, "Xóa thực đơn thành cong", menuItem);
+};
+
+export const selectionSlug: string = "/selection";
+export const selection: any = async (req: Request, res: Response) => {
+  const menuItems = await MenuItem.find({ isDelete: false }, { name: 1, _id: 1 }).lean();
+  if (!menuItems) return ApiResponse.error(res, 400, "Lấy danh sách thực đơn thất bại");
+  return ApiResponse.success(res, 200, "Lấy danh sách thực đơn thành cong", menuItems);
 };

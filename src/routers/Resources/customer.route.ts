@@ -14,4 +14,6 @@ customerRoute.patch(CustomerController.updateSlug, asyncHandler(CustomerControll
 
 customerRoute.delete(CustomerController.removeSlug, asyncHandler(CustomerController.remove));
 
+customerRoute.get(CustomerController.selectionSlug, asyncHandler(CustomerController.selection));
+
 export default customerRoute;

@@ -1,22 +1,16 @@
+import { EPaymentMethod } from "@/types/enum";
+
 export interface ICreate {
-  customer: {
-    customerId: string | null;
+  customerId?: string;
+  customer?: {
     name: string;
     phoneNumber: string;
     address: string;
   };
-
-  items: Array<{
+  items: {
     menuItemId: string;
-    name: string;
     quantity: number;
-    price: number;
-    discount: number;
-    total: number;
-  }>;
-  totalQuantity: number;
-  totalAmount: number;
-  finalAmount: number;
-  paymentMethod: string;
+  }[];
+  paymentMethod: EPaymentMethod;
   cashReceived: number;
 }

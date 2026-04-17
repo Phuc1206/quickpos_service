@@ -15,9 +15,14 @@ export const create: any = async (req: Request, res: Response) => {
 
 export const listSlug: string = "/list";
 export const list: any = async (req: Request, res: Response) => {
-  const { page, rows } = req.query;
+  const { page, rows, search } = req.query;
   const { skip, limit } = pagination(rows, page);
-  const customers = await Customer.find({ isDelete: false }).skip(skip).limit(limit);
+  const customers = await Customer.find({
+    isDelete: false,
+    name: { $regex: search, $options: "i" }
+  })
+    .skip(skip)
+    .limit(limit);
   if (!customers) return ApiResponse.error(res, 400, "Lấy danh sách khách hàng thất bại");
   return ApiResponse.success(res, 200, "Lấy danh sách khách hàng thành công", customers);
 };
@@ -51,4 +56,11 @@ export const remove: any = async (req: Request, res: Response) => {
   const customer = await Customer.findByIdAndUpdate(id, { isDelete: true }, { new: true });
   if (!customer) return ApiResponse.error(res, 400, "Xóa khách hàng thất bại");
   return ApiResponse.success(res, 200, "Xóa khách hàng thành công", customer);
+};
+
+export const selectionSlug: string = "/selection";
+export const selection: any = async (req: Request, res: Response) => {
+  const customers = await Customer.find({ isDelete: false }, { name: 1, _id: 1 }).lean();
+  if (!customers) return ApiResponse.error(res, 400, "Lấy danh sách khách hàng thất bại");
+  return ApiResponse.success(res, 200, "Lấy danh sách khách hàng tion cong", customers);
 };

@@ -9,6 +9,7 @@ interface IMenuItemSchema {
   name: string;
   price: number;
   image: string;
+  publicId: string;
 }
 
 export interface IMenuItemDocument extends IBaseDocument, IMenuItemSchema {
@@ -39,7 +40,10 @@ const MenuItemSchema = new mongoose.Schema<IMenuItemDocument, IMenuItemModel>(
       type: String,
       default: ""
     },
-
+    publicId: {
+      type: String,
+      default: ""
+    },
     ...generate.schemaDefaultDefinition()
   },
   {

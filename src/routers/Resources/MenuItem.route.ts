@@ -13,4 +13,16 @@ menuItemRoute.post(
 
 menuItemRoute.get(MenuItemController.listSlug, asyncHandler(MenuItemController.list));
 
+menuItemRoute.get(MenuItemController.detailSlug, asyncHandler(MenuItemController.detail));
+
+menuItemRoute.patch(
+  MenuItemController.updateSlug,
+  uploadMemory.single("image"),
+  asyncHandler(MenuItemController.update)
+);
+
+menuItemRoute.delete(MenuItemController.removeSlug, asyncHandler(MenuItemController.remove));
+
+menuItemRoute.get(MenuItemController.selectionSlug, asyncHandler(MenuItemController.selection));
+
 export default menuItemRoute;
