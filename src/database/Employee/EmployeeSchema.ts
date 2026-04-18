@@ -5,10 +5,13 @@ import generate from "@/utils/generate";
 import validate from "@/utils/validate";
 import { IBaseDocument } from "@/core/types/db-types";
 import TDocument from "@/core/types/TDocument";
+import hashPassword from "@/utils/hashPassword";
+import ENV from "@/core/ENV";
 
 interface IEmployeeSchema {
   name: string;
   phoneNumber: string;
+  password: string;
   address: string;
   level: string;
 }
@@ -46,6 +49,11 @@ const EmployeeSchema = new mongoose.Schema<IEmployeeDocument, IEmployeeModel>(
     address: {
       type: String,
       default: ""
+    },
+    password: {
+      type: String,
+      default: hashPassword(ENV.DEFAULT_PASSWORD),
+      required: true
     },
     level: {
       type: String,

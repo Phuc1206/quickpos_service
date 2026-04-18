@@ -1,14 +1,16 @@
-import { ICreate } from "@/controllers/BillController/type";
+import { ICreate, IList } from "@/controllers/BillController/type";
 import Bill from "@/database/Bill";
 import Customer from "@/database/Customer";
 import MenuItem from "@/database/MenuItem";
 import { generateBillCode } from "@/services/bill.service";
 import { ApiResponse } from "@/utils/ApiResponse";
+import pagination from "@/utils/pagination";
 import { Request, Response } from "express";
 
 export const createSlug: string = "/";
 export const create: any = async (req: Request, res: Response) => {
-  const { customerId, customer, items, paymentMethod, cashReceived } = req.body as ICreate;
+  const { customerId, customer, items, paymentMethod, cashReceived, finalAmount } =
+    req.body as ICreate;
   if (!items || !items.length) return ApiResponse.error(res, 400, "Items là bắt buộc");
   const itemIds = items.map((i) => i.menuItemId);
   const menuItems = await MenuItem.find({
@@ -50,14 +52,45 @@ export const create: any = async (req: Request, res: Response) => {
   const bill = await Bill.create({
     code: code,
     customer: customerData,
+    employeeId: req.token.userId,
     items: orderItems,
     totalQuantity,
     totalAmount,
-    finalAmount: totalAmount,
+    finalAmount,
     paymentMethod,
     cashReceived
   });
 
   if (!bill) return ApiResponse.error(res, 400, "Tạo hóa đơn thất bại");
   return ApiResponse.success(res, 201, "Tạo hóa đơn thành công", bill);
+};
+
+export const detailSlug: string = "/detail/:id";
+export const detail: any = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const bill = await Bill.findById(id).lean().populate("employeeId", "name");
+  if (!bill) return ApiResponse.error(res, 400, "Lấy hóa đơn thất bại");
+  return ApiResponse.success(res, 200, "Lấy hóa đơn thành công", bill);
+};
+
+export const listSlug: string = "/list";
+export const list: any = async (req: Request, res: Response) => {
+  const { page, rows, search, from, to } = req.query as unknown as IList;
+  const { skip, limit } = pagination(rows, page);
+  const fromDate = new Date(from);
+  const toDate = new Date(to);
+  let filter: any = { isDelete: false };
+  if (from && to) {
+    filter = { ...filter, createdAt: { $gte: fromDate, $lte: toDate } };
+  }
+  if (search) filter = { ...filter, code: { $regex: search, $options: "i" } };
+
+  const bills = await Bill.find({
+    ...filter
+  })
+    .skip(skip)
+    .limit(limit)
+    .lean();
+  if (!bills) return ApiResponse.error(res, 400, "Lấy danh sách hóa đơn thất bại");
+  return ApiResponse.success(res, 200, "Lấy danh sách hóa đơn thành công", bills);
 };

@@ -28,7 +28,11 @@ export const signIn: any = async (req: Request, res: Response) => {
         level: ENV.ADMIN_PERMISSION
       };
     } else {
-      const user = await Employee.findOne({ username, password: hashPassword(password) }).lean();
+      const user = await Employee.findOne({
+        isDelete: false,
+        phoneNumber: username,
+        password: hashPassword(password)
+      }).lean();
       if (!user) {
         return res.status(401).json({ error: "Thông tin đăng nhập không chính xác" });
       }

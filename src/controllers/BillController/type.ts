@@ -13,4 +13,13 @@ export interface ICreate {
   }[];
   paymentMethod: EPaymentMethod;
   cashReceived: number;
+  finalAmount: number;
+}
+
+export interface IList {
+  page: number;
+  rows: number;
+  search: string;
+  from: string;
+  to: string;
 }

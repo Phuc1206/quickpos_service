@@ -1,14 +1,13 @@
 import BillController from "@/controllers/BillController";
 import { asyncHandler } from "@/middleware/asyncHandler";
-import uploadMemory from "@/middleware/uploadMemory";
 import express from "express";
 
 const billRoute = express.Router();
 
-billRoute.post(
-  BillController.createSlug,
+billRoute.post(BillController.createSlug, asyncHandler(BillController.create));
 
-  asyncHandler(BillController.create)
-);
+billRoute.get(BillController.listSlug, asyncHandler(BillController.list));
+
+billRoute.get(BillController.detailSlug, asyncHandler(BillController.detail));
 
 export default billRoute;
