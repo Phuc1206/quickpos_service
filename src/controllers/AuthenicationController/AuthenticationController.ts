@@ -34,7 +34,7 @@ export const signIn: any = async (req: Request, res: Response) => {
         password: hashPassword(password)
       }).lean();
       if (!user) {
-        return res.status(401).json({ error: "Thông tin đăng nhập không chính xác" });
+        return res.status(404).json({ error: "Thông tin đăng nhập không chính xác" });
       }
       userToSign = user;
 
