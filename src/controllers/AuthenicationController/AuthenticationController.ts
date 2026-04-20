@@ -21,7 +21,7 @@ export const signIn: any = async (req: Request, res: Response) => {
         username: ENV.ADMIN_USER_NAME,
         phoneNumber: ENV.ADMIN_PHONE_NUMBER,
         fullName: ENV.ADMIN_FULL_NAME,
-        permission: ENV.ADMIN_PERMISSION
+        level: ENV.ADMIN_PERMISSION
       };
       tokenPayload = {
         userId: ENV.ADMIN_ID,
@@ -102,7 +102,7 @@ export const refreshToken: any = async (req: Request, res: Response) => {
         username: ENV.ADMIN_USER_NAME,
         phoneNumber: ENV.ADMIN_PHONE_NUMBER,
         fullName: ENV.ADMIN_FULL_NAME,
-        permission: ENV.ADMIN_PERMISSION
+        level: ENV.ADMIN_PERMISSION
       };
     } else {
       const user = await Employee.findById(minimalPayload.userId).lean();
