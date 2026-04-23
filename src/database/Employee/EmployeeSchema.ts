@@ -46,8 +46,7 @@ const EmployeeSchema = new mongoose.Schema<IEmployeeDocument, IEmployeeModel>(
         }
       },
       unique: true,
-      sparse: true,
-      default: ""
+      sparse: true
     },
     address: {
       type: String,

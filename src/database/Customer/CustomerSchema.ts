@@ -42,8 +42,7 @@ const CustomerSchema = new mongoose.Schema<ICustomerDocument, ICustomerModel>(
         }
       },
       unique: true,
-      sparse: true,
-      default: ""
+      sparse: true
     },
     address: {
       type: String,
