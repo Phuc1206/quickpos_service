@@ -6,14 +6,25 @@ import { Request, Response } from "express";
 export const createSlug: string = "/";
 export const create: any = async (req: Request, res: Response) => {
   const { name, phoneNumber, address } = req.body;
-  if (phoneNumber) {
-    const existingCustomer = await Customer.findOne({ phoneNumber });
+  // chuẩn hóa dữ liệu
+  const cleanedPhone = phoneNumber?.trim();
+
+  // check trùng khi có phone hợp lệ
+  if (cleanedPhone) {
+    const existingCustomer = await Customer.findOne({ phoneNumber: cleanedPhone });
     if (existingCustomer) {
       return ApiResponse.error(res, 400, "Số điện thoại đã được sử dụng");
     }
   }
-  const customer = await Customer.create({ name, phoneNumber, address });
-  if (!customer) return ApiResponse.error(res, 400, "Tạo khách hàng thất bại");
+
+  // tạo payload sạch (không lưu "")
+  const payload: any = { name, address };
+  if (cleanedPhone) {
+    payload.phoneNumber = cleanedPhone;
+  }
+
+  const customer = await Customer.create(payload);
+
   return ApiResponse.success(res, 201, "Tạo khách hàng thành công", customer);
 };
 
@@ -43,15 +54,38 @@ export const updateSlug: string = "/:id";
 export const update: any = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name, phoneNumber, address } = req.body;
-  const existingCustomer = await Customer.findOne({ _id: { $ne: id }, phoneNumber });
-  if (existingCustomer) return ApiResponse.error(res, 400, "Số điện thoại đã được sử dụng");
-  const customer = await Customer.findByIdAndUpdate(
-    id,
-    { name, phoneNumber, address },
-    { new: true }
-  );
-  if (!customer) return ApiResponse.error(res, 400, "Cập nhật khách hàng thất bại");
-  return ApiResponse.success(res, 200, "Cập nhật khách hàng thành cong", customer);
+
+  const cleanedPhone = phoneNumber?.trim();
+
+  // chỉ check trùng khi có phone hợp lệ
+  if (cleanedPhone) {
+    const existingCustomer = await Customer.findOne({
+      _id: { $ne: id },
+      phoneNumber: cleanedPhone
+    });
+
+    if (existingCustomer) {
+      return ApiResponse.error(res, 400, "Số điện thoại đã được sử dụng");
+    }
+  }
+
+  // tạo payload sạch
+  const payload: any = { name, address };
+
+  if (cleanedPhone) {
+    payload.phoneNumber = cleanedPhone;
+  } else {
+    // nếu user xoá số điện thoại → remove khỏi DB
+    payload.$unset = { phoneNumber: "" };
+  }
+
+  const customer = await Customer.findByIdAndUpdate(id, payload, { new: true });
+
+  if (!customer) {
+    return ApiResponse.error(res, 400, "Cập nhật khách hàng thất bại");
+  }
+
+  return ApiResponse.success(res, 200, "Cập nhật khách hàng thành công", customer);
 };
 
 export const removeSlug: string = "/:id";

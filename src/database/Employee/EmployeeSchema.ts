@@ -39,6 +39,7 @@ const EmployeeSchema = new mongoose.Schema<IEmployeeDocument, IEmployeeModel>(
       type: String,
       validate: {
         validator: (v: string) => {
+          if (!v) return true;
           return validate.phoneNumber(v);
         },
         message: () => {
@@ -68,4 +69,13 @@ const EmployeeSchema = new mongoose.Schema<IEmployeeDocument, IEmployeeModel>(
   }
 );
 
+EmployeeSchema.index(
+  { phoneNumber: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      phoneNumber: { $type: "string", $ne: "" }
+    }
+  }
+);
 export default make.schema(EmployeeSchema);
