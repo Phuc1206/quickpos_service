@@ -35,17 +35,43 @@ export const create: any = async (req: Request, res: Response) => {
 export const updateSlug: string = "/:id";
 export const update: any = async (req: Request, res: Response) => {
   const { id } = req.params;
-
   const { name, phoneNumber, address } = req.body;
-  const existingEmployee = await Employee.findOne({ _id: { $ne: id }, phoneNumber });
-  if (existingEmployee) return ApiResponse.error(res, 400, "Số điện thoại đã được sử dụng");
-  const customer = await Employee.findByIdAndUpdate(
-    id,
-    { name, phoneNumber, address },
-    { new: true }
-  );
-  if (!customer) return ApiResponse.error(res, 400, "Cập nhật nhân viên thất bại");
-  return ApiResponse.success(res, 200, "Cập nhật nhân viên thành công", customer);
+
+  // chuẩn hóa phone
+  const cleanedPhone = phoneNumber?.trim();
+
+  // chỉ check khi có phone hợp lệ
+  if (cleanedPhone) {
+    const existingEmployee = await Employee.findOne({
+      _id: { $ne: id },
+      phoneNumber: cleanedPhone
+    });
+
+    if (existingEmployee) {
+      return ApiResponse.error(res, 400, "Số điện thoại đã được sử dụng");
+    }
+  }
+
+  // payload sạch
+  const payload: any = {
+    name,
+    address
+  };
+
+  if (cleanedPhone) {
+    payload.phoneNumber = cleanedPhone;
+  } else {
+    // nếu xoá số điện thoại
+    payload.$unset = { phoneNumber: "" };
+  }
+
+  const employee = await Employee.findByIdAndUpdate(id, payload, { new: true });
+
+  if (!employee) {
+    return ApiResponse.error(res, 400, "Cập nhật nhân viên thất bại");
+  }
+
+  return ApiResponse.success(res, 200, "Cập nhật nhân viên thành công", employee);
 };
 
 export const removeSlug: string = "/:id";
