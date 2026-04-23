@@ -35,6 +35,7 @@ const CustomerSchema = new mongoose.Schema<ICustomerDocument, ICustomerModel>(
       type: String,
       validate: {
         validator: (v: string) => {
+          if (!v) return true;
           return validate.phoneNumber(v);
         },
         message: () => {
@@ -55,4 +56,13 @@ const CustomerSchema = new mongoose.Schema<ICustomerDocument, ICustomerModel>(
   }
 );
 
+CustomerSchema.index(
+  { phoneNumber: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      phoneNumber: { $type: "string", $ne: "" }
+    }
+  }
+);
 export default make.schema(CustomerSchema);
