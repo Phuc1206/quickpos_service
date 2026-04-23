@@ -36,10 +36,12 @@ export const list: any = async (req: Request, res: Response) => {
     isDelete: false,
     name: { $regex: search, $options: "i" }
   })
+
     .skip(skip)
     .limit(limit);
+  const count = await MenuItem.find({ isDelete: false }).countDocuments();
   if (!menuItems) return ApiResponse.error(res, 400, "Lấy danh sách thực đơn thất bại");
-  return ApiResponse.success(res, 200, "Lấy danh sách thực đơn thành công", menuItems);
+  return ApiResponse.success(res, 200, "Lấy danh sách thực đơn thành công", { menuItems, count });
 };
 
 export const detailSlug: string = "/detail/:id";
