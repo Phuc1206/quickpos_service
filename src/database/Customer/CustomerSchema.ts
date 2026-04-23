@@ -40,7 +40,10 @@ const CustomerSchema = new mongoose.Schema<ICustomerDocument, ICustomerModel>(
         message: () => {
           return "Invalid phoneNumber";
         }
-      }
+      },
+      unique: true,
+      sparse: true,
+      default: ""
     },
     address: {
       type: String,

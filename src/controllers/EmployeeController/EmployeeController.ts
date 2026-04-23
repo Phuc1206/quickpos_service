@@ -7,8 +7,11 @@ import { Request, Response } from "express";
 export const createSlug: string = "/";
 export const create: any = async (req: Request, res: Response) => {
   const { name, phoneNumber, address } = req.body;
-  const existingCustomer = await Employee.findOne({ phoneNumber });
-  if (existingCustomer) return ApiResponse.error(res, 400, "Số điện thoại đã được sử dụng");
+  if (phoneNumber) {
+    const existingCustomer = await Employee.findOne({ phoneNumber });
+    if (existingCustomer) return ApiResponse.error(res, 400, "Số điện thoại đã được sử dụng");
+  }
+
   const customer = await Employee.create({ name, phoneNumber, address, level: ELevel.EMPLOYEE });
   if (!customer) return ApiResponse.error(res, 400, "Tạo nhân viên thất bại");
   return ApiResponse.success(res, 201, "Tạo nhân viên thành công", customer);

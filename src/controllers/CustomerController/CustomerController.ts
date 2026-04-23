@@ -6,8 +6,12 @@ import { Request, Response } from "express";
 export const createSlug: string = "/";
 export const create: any = async (req: Request, res: Response) => {
   const { name, phoneNumber, address } = req.body;
-  const existingCustomer = await Customer.findOne({ phoneNumber });
-  if (existingCustomer) return ApiResponse.error(res, 400, "Số điện thoại đã được sử dụng");
+  if (phoneNumber) {
+    const existingCustomer = await Customer.findOne({ phoneNumber });
+    if (existingCustomer) {
+      return ApiResponse.error(res, 400, "Số điện thoại đã được sử dụng");
+    }
+  }
   const customer = await Customer.create({ name, phoneNumber, address });
   if (!customer) return ApiResponse.error(res, 400, "Tạo khách hàng thất bại");
   return ApiResponse.success(res, 201, "Tạo khách hàng thành công", customer);
@@ -60,7 +64,10 @@ export const remove: any = async (req: Request, res: Response) => {
 
 export const selectionSlug: string = "/selection";
 export const selection: any = async (req: Request, res: Response) => {
-  const customers = await Customer.find({ isDelete: false }, { name: 1, _id: 1 }).lean();
+  const customers = await Customer.find(
+    { isDelete: false },
+    { name: 1, phoneNumber: 1, _id: 1 }
+  ).lean();
   if (!customers) return ApiResponse.error(res, 400, "Lấy danh sách khách hàng thất bại");
   return ApiResponse.success(res, 200, "Lấy danh sách khách hàng tion cong", customers);
 };

@@ -44,7 +44,10 @@ const EmployeeSchema = new mongoose.Schema<IEmployeeDocument, IEmployeeModel>(
         message: () => {
           return "Invalid phoneNumber";
         }
-      }
+      },
+      unique: true,
+      sparse: true,
+      default: ""
     },
     address: {
       type: String,
