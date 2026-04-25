@@ -39,7 +39,10 @@ export const list: any = async (req: Request, res: Response) => {
     .skip(skip)
     .limit(limit);
 
-  const count = await Customer.find({ isDelete: false }).countDocuments();
+  const count = await Customer.find({
+    isDelete: false,
+    name: { $regex: search, $options: "i" }
+  }).countDocuments();
   if (!customers) return ApiResponse.error(res, 400, "Lấy danh sách khách hàng thất bại");
   return ApiResponse.success(res, 200, "Lấy danh sách khách hàng thành công", { customers, count });
 };

@@ -100,7 +100,10 @@ export const list: any = async (req: Request, res: Response) => {
   })
     .skip(skip)
     .limit(limit);
-  const count = await Employee.find({ isDelete: false }).countDocuments();
+  const count = await Employee.find({
+    isDelete: false,
+    name: { $regex: search, $options: "i" }
+  }).countDocuments();
   if (!employees) return ApiResponse.error(res, 400, "Lấy danh sách nhân viên thất bại");
   return ApiResponse.success(res, 200, "Lấy danh sách nhân viên thành công", { employees, count });
 };

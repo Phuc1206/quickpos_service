@@ -91,7 +91,7 @@ export const list: any = async (req: Request, res: Response) => {
     .skip(skip)
     .limit(limit)
     .lean();
-  const count = await Bill.find({ isDelete: false }).countDocuments();
+  const count = await Bill.find({ ...filter }).countDocuments();
   if (!bills) return ApiResponse.error(res, 400, "Lấy danh sách hóa đơn thất bại");
   return ApiResponse.success(res, 200, "Lấy danh sách hóa đơn thành công", { bills, count });
 };
