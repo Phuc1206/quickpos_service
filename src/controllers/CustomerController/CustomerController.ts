@@ -1,3 +1,4 @@
+import Bill from "@/database/Bill";
 import Customer from "@/database/Customer";
 import { ApiResponse } from "@/utils/ApiResponse";
 import pagination from "@/utils/pagination";
@@ -52,7 +53,13 @@ export const detail: any = async (req: Request, res: Response) => {
   const { id } = req.params;
   const customer = await Customer.findById(id).lean();
   if (!customer) return ApiResponse.error(res, 400, "Lấy khách hàng thất bại");
-  return ApiResponse.success(res, 200, "Lấy khách hàng thành cong", customer);
+  const bills = await Bill.find({
+    "customer.customerId": id,
+    isDelete: false
+  })
+    .sort({ createdAt: -1 })
+    .lean();
+  return ApiResponse.success(res, 200, "Lấy khách hàng thành cong", { customer, bills });
 };
 
 export const updateSlug: string = "/:id";
