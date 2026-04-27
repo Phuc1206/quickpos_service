@@ -63,8 +63,8 @@ const BillSchema = new mongoose.Schema<IBillDocument, IBillModel>(
       },
       name: {
         type: String,
-        default: "",
-        required: true
+        default: ""
+        // required: true
       },
       phoneNumber: {
         type: String,
