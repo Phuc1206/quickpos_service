@@ -1,6 +1,7 @@
 import { ICreate, IList } from "@/controllers/BillController/type";
 import Bill from "@/database/Bill";
 import Customer from "@/database/Customer";
+import Employee from "@/database/Employee";
 import MenuItem from "@/database/MenuItem";
 import { generateBillCode } from "@/services/bill.service";
 import { ApiResponse } from "@/utils/ApiResponse";
@@ -60,9 +61,14 @@ export const create: any = async (req: Request, res: Response) => {
     paymentMethod,
     cashReceived
   });
+  const employee = await Employee.findById(req.token.userId).select("name");
 
+  const result = {
+    ...bill.toObject(),
+    employeeName: employee?.name || null
+  };
   if (!bill) return ApiResponse.error(res, 400, "Tạo hóa đơn thất bại");
-  return ApiResponse.success(res, 201, "Tạo hóa đơn thành công", bill);
+  return ApiResponse.success(res, 201, "Tạo hóa đơn thành công", result);
 };
 
 export const detailSlug: string = "/detail/:id";
