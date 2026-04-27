@@ -60,23 +60,32 @@ export const update: any = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name, price } = req.body;
   const file = req.file as Express.Multer.File;
-  let imageUrl = "";
-  let publicId = "";
+
+  const updateData: any = {
+    name,
+    price
+  };
+
   if (file) {
     const menuItem = await MenuItem.findById(id).lean();
     if (!menuItem) return ApiResponse.error(res, 400, "Không tìm thấy thực đơn");
-    const result: any = await CloudinaryService.uploadImage(req.file as Express.Multer.File);
-    imageUrl = result.secure_url;
-    publicId = result.public_id;
-    deleteImage(menuItem.publicId);
+
+    const result: any = await CloudinaryService.uploadImage(file);
+
+    updateData.image = result.secure_url;
+    updateData.publicId = result.public_id;
+
+    // xoá ảnh cũ
+    if (menuItem.publicId) {
+      await deleteImage(menuItem.publicId);
+    }
   }
-  const menuItem = await MenuItem.findByIdAndUpdate(
-    id,
-    { name, price, image: imageUrl, publicId },
-    { new: true }
-  );
+
+  const menuItem = await MenuItem.findByIdAndUpdate(id, updateData, { new: true });
+
   if (!menuItem) return ApiResponse.error(res, 400, "Cập nhật thực đơn thất bại");
-  return ApiResponse.success(res, 200, "Cập nhật thực đơn thành cong", menuItem);
+
+  return ApiResponse.success(res, 200, "Cập nhật thực đơn thành công", menuItem);
 };
 
 export const removeSlug: string = "/:id";
