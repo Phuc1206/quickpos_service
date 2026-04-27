@@ -36,7 +36,7 @@ export const list: any = async (req: Request, res: Response) => {
     isDelete: false,
     name: { $regex: search, $options: "i" }
   })
-
+    .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
   const count = await MenuItem.find({
@@ -98,7 +98,9 @@ export const remove: any = async (req: Request, res: Response) => {
 
 export const selectionSlug: string = "/selection";
 export const selection: any = async (req: Request, res: Response) => {
-  const menuItems = await MenuItem.find({ isDelete: false }, { name: 1, _id: 1 }).lean();
+  const menuItems = await MenuItem.find({ isDelete: false }, { name: 1, _id: 1, createdAt: 1 })
+    .sort({ createdAt: -1 })
+    .lean();
   if (!menuItems) return ApiResponse.error(res, 400, "Lấy danh sách thực đơn thất bại");
   return ApiResponse.success(res, 200, "Lấy danh sách thực đơn thành cong", menuItems);
 };

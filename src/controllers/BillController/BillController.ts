@@ -94,6 +94,7 @@ export const list: any = async (req: Request, res: Response) => {
   const bills = await Bill.find({
     ...filter
   })
+    .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
     .lean();

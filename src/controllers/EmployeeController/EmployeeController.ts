@@ -101,6 +101,7 @@ export const list: any = async (req: Request, res: Response) => {
       { phoneNumber: { $regex: search, $options: "i" } }
     ]
   })
+    .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
   const count = await Employee.find({
