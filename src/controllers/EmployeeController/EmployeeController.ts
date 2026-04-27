@@ -96,13 +96,19 @@ export const list: any = async (req: Request, res: Response) => {
   const { skip, limit } = pagination(rows, page);
   const employees = await Employee.find({
     isDelete: false,
-    name: { $regex: search, $options: "i" }
+    $or: [
+      { name: { $regex: search, $options: "i" } },
+      { phoneNumber: { $regex: search, $options: "i" } }
+    ]
   })
     .skip(skip)
     .limit(limit);
   const count = await Employee.find({
     isDelete: false,
-    name: { $regex: search, $options: "i" }
+    $or: [
+      { name: { $regex: search, $options: "i" } },
+      { phoneNumber: { $regex: search, $options: "i" } }
+    ]
   }).countDocuments();
   if (!employees) return ApiResponse.error(res, 400, "Lấy danh sách nhân viên thất bại");
   return ApiResponse.success(res, 200, "Lấy danh sách nhân viên thành công", { employees, count });
