@@ -7,8 +7,18 @@ export interface TAllowOrigins {
 const allowOrigins: TAllowOrigins[] = [
   {
     protocol: ["http", "https"],
-    domain: "*",
-    ports: []
+    domain: "127.0.0.1",
+    ports: [5173]
+  },
+  {
+    protocol: ["http", "https"],
+    domain: "localhost",
+    ports: [5173]
+  },
+  {
+    protocol: ["http", "https"],
+    domain: "monantrunghoa.netlify.app",
+    ports: [80, 443]
   }
 ];
 
